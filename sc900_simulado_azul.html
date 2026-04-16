@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SC-900 Simulado Interativo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 100%);color:#e0e0e0;min-height:100vh;padding:20px;}
+.container{max-width:900px;margin:0 auto;}
+
+/* TELA INICIAL */
+.start-screen{display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:100vh;gap:30px;text-align:center;}
+.start-screen h1{font-size:42px;background:linear-gradient(135deg,#3b82f6,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.start-screen p{font-size:16px;opacity:.85;max-width:580px;line-height:1.6;}
+.badge-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:5px;}
+.badge{background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.4);padding:6px 14px;border-radius:20px;font-size:13px;color:#93c5fd;}
+.proof-selector{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;width:100%;max-width:600px;margin-top:10px;}
+.proof-card{background:linear-gradient(135deg,#1e3a8a,#2563eb);padding:28px;border-radius:14px;cursor:pointer;text-align:center;transition:all .3s;border:2px solid transparent;}
+.proof-card:hover{transform:translateY(-6px);box-shadow:0 12px 35px rgba(37,99,235,.35);border-color:#60a5fa;}
+.proof-card h3{font-size:22px;margin-bottom:8px;}
+.proof-card p{font-size:13px;opacity:.9;line-height:1.5;}
+.proof-card .meta{margin-top:12px;font-size:12px;background:rgba(255,255,255,.1);padding:6px 10px;border-radius:6px;}
+
+/* HEADER */
+.header{background:linear-gradient(135deg,#1e3a8a,#2563eb);padding:22px 25px;border-radius:12px;margin-bottom:25px;box-shadow:0 6px 25px rgba(37,99,235,.25);}
+.header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
+.header-title{font-size:20px;font-weight:700;}
+.proof-info{background:rgba(255,255,255,.12);padding:7px 14px;border-radius:8px;font-size:13px;font-weight:700;}
+.progress-bar{width:100%;height:8px;background:rgba(255,255,255,.2);border-radius:4px;overflow:hidden;margin-bottom:14px;}
+.progress-fill{height:100%;background:linear-gradient(90deg,#10b981,#34d399);border-radius:4px;transition:width .4s ease;}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.stat{background:rgba(255,255,255,.1);padding:10px;border-radius:8px;text-align:center;}
+.stat-value{font-size:18px;font-weight:700;margin-bottom:3px;}
+.stat-label{font-size:11px;opacity:.8;text-transform:uppercase;}
+
+/* QUESTÃO */
+.question-container{background:#1a2942;border:2px solid #2a4070;border-radius:12px;padding:35px;margin-bottom:25px;box-shadow:0 4px 15px rgba(0,0,0,.3);animation:slideIn .3s ease;}
+@keyframes slideIn{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.q-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;padding-bottom:15px;border-bottom:2px solid #2a4070;gap:10px;flex-wrap:wrap;}
+.q-left{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.q-num{background:#1d4ed8;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;}
+.q-domain{background:#1e3a5f;color:#60a5fa;padding:4px 12px;border-radius:4px;font-size:11px;font-weight:700;}
+.q-diff{padding:4px 10px;border-radius:4px;font-size:11px;font-weight:700;}
+.q-diff.easy{background:#1f2937;color:#10b981;}
+.q-diff.media{background:#1f2937;color:#f59e0b;}
+.q-diff.hard{background:#1f2937;color:#ef4444;}
+.q-type-badge{background:rgba(96,165,250,.12);color:#93c5fd;padding:4px 10px;border-radius:4px;font-size:11px;}
+.q-text{font-size:16px;font-weight:600;margin:22px 0 15px;line-height:1.65;}
+.q-scenario{background:#0f1e33;border-left:4px solid #2563eb;padding:14px;margin:15px 0;border-radius:6px;font-size:13.5px;line-height:1.55;opacity:.9;}
+.multi-hint{background:rgba(96,165,250,.12);border:1px solid rgba(96,165,250,.3);color:#93c5fd;padding:8px 14px;border-radius:6px;font-size:13px;margin:10px 0;display:inline-block;}
+
+/* OPÇÕES */
+.options{display:flex;flex-direction:column;gap:10px;margin:20px 0;}
+.option{background:#1e3155;border:2px solid #2a4070;padding:14px 14px 14px 45px;border-radius:8px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:12px;font-size:14.5px;position:relative;}
+.option:hover:not(.disabled){background:#243460;border-color:#3b82f6;}
+.option input{position:absolute;left:14px;top:50%;transform:translateY(-50%);cursor:pointer;width:18px;height:18px;accent-color:#3b82f6;}
+.option.selected{border-color:#3b82f6;background:#1e3a6e;}
+.option.submitted.correct{border-color:#10b981;background:#0f3d2f;}
+.option.submitted.incorrect{border-color:#ef4444;background:#3d1a1a;}
+.option.disabled{cursor:default;}
+
+/* FEEDBACK */
+.feedback{display:none;padding:18px;border-radius:8px;margin-top:18px;font-size:13.5px;line-height:1.65;border-left:4px solid;}
+.feedback.show{display:block;}
+.feedback.correct{background:#0f3d2f;border-color:#10b981;color:#86efac;}
+.feedback.incorrect{background:#3d1a1a;border-color:#ef4444;color:#fca5a5;}
+.feedback-title{font-weight:700;margin-bottom:8px;font-size:15px;}
+
+/* BOTÕES */
+.navigation{display:flex;gap:12px;margin-top:20px;}
+button{padding:12px 24px;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px;transition:all .3s;}
+.btn-prev,.btn-next{background:#2a3f5f;color:white;flex:1;}
+.btn-prev:hover:not(:disabled),.btn-next:hover:not(:disabled){background:#334d73;transform:translateY(-2px);}
+.btn-prev:disabled,.btn-next:disabled{opacity:.4;cursor:not-allowed;}
+.btn-confirm{background:#1d4ed8;color:white;flex:1;}
+.btn-confirm:hover{background:#1e40af;transform:translateY(-2px);}
+.btn-finish{background:#10b981;color:white;flex:2;}
+.btn-finish:hover{background:#059669;transform:translateY(-2px);}
+
+/* RESULTADO */
+.results-screen{display:none;background:linear-gradient(135deg,#1e3a8a,#1d4ed8);padding:40px;border-radius:12px;text-align:center;box-shadow:0 8px 32px rgba(29,78,216,.3);}
+.results-screen.show{display:block;}
+.results-screen h2{font-size:28px;margin-bottom:15px;}
+.score-display{font-size:60px;font-weight:700;margin:20px 0;}
+.score-status{font-size:20px;margin-bottom:25px;padding:12px 22px;background:rgba(255,255,255,.12);border-radius:8px;display:inline-block;}
+.results-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;margin:25px 0;}
+.result-card{background:rgba(255,255,255,.1);padding:18px;border-radius:8px;border-left:4px solid;}
+.result-card.c{border-color:#10b981;}
+.result-card.i{border-color:#ef4444;}
+.result-card.b{border-color:#f59e0b;}
+.result-card h3{font-size:11px;opacity:.8;margin-bottom:8px;text-transform:uppercase;}
+.result-card .num{font-size:34px;font-weight:700;}
+
+/* DETALHES */
+.detail-box{background:rgba(0,0,0,.25);padding:25px;border-radius:10px;margin-top:25px;text-align:left;}
+.detail-box h3{margin-bottom:18px;font-size:16px;color:#93c5fd;}
+.domain-item{padding:12px 0;border-bottom:1px solid rgba(255,255,255,.1);}
+.domain-item:last-child{border-bottom:none;}
+.domain-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.domain-name{font-size:14px;}
+.domain-score{font-weight:700;font-size:14px;}
+.domain-bar{width:100%;height:16px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden;}
+.domain-progress{height:100%;background:linear-gradient(90deg,#3b82f6,#60a5fa);border-radius:4px;display:flex;align-items:center;justify-content:center;color:#0f172a;font-size:11px;font-weight:700;transition:width .5s;}
+.q-review{background:#1a2942;padding:14px;border-radius:8px;margin:8px 0;border-left:4px solid;}
+.q-review.c{border-color:#10b981;}
+.q-review.i{border-color:#ef4444;}
+.q-review-num{font-weight:700;margin-bottom:5px;font-size:13px;}
+.q-review-text{font-size:13px;margin-bottom:6px;opacity:.9;}
+.q-review-ans{font-size:12px;opacity:.8;}
+.ca{color:#10b981;}
+.ia{color:#ef4444;}
+.final-btns{display:flex;gap:12px;margin-top:25px;justify-content:center;flex-wrap:wrap;}
+.btn-primary{background:#10b981;color:white;padding:12px 28px;}
+.btn-primary:hover{background:#059669;}
+.btn-secondary{background:#2a3f5f;color:white;padding:12px 28px;}
+.btn-secondary:hover{background:#334d73;}
+
+@media(max-width:600px){
+  .stats{grid-template-columns:repeat(2,1fr);}
+  .question-container{padding:20px;}
+  .q-text{font-size:15px;}
+  .start-screen h1{font-size:30px;}
+  .proof-selector{grid-template-columns:1fr;}
+  .score-display{font-size:44px;}
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- TELA INICIAL -->
+<div id="startScreen" class="start-screen">
+  <h1>🔐 SC-900 Simulado</h1>
+  <p>Microsoft Security, Compliance, and Identity Fundamentals<br>Baseado no banco de questões oficial — nível real de prova</p>
+  <div class="badge-row">
+    <div class="badge">85 Questões Únicas</div>
+    <div class="badge">4 Domínios</div>
+    <div class="badge">Dark Mode</div>
+    <div class="badge">Feedback Detalhado</div>
+  </div>
+  <div class="proof-selector">
+    <div class="proof-card" onclick="startProof(1)">
+      <h3>📋 Prova Completa</h3>
+      <p>60 questões distribuídas nos 4 domínios conforme peso real da certificação</p>
+      <div class="meta">Fácil · Média · Difícil | Multi-seleção</div>
+    </div>
+    <div class="proof-card" onclick="startProof(2)">
+      <h3>⚡ Mini Simulado Final</h3>
+      <p>25 questões inéditas para revisão final. Mesma distribuição de assuntos da prova</p>
+      <div class="meta">35 min sugeridos | Aprovação: 70%</div>
+    </div>
+  </div>
+</div>
+
+<!-- SIMULADO -->
+<div id="quizScreen" style="display:none;">
+  <div class="header">
+    <div class="header-top">
+      <div class="header-title" id="quizTitle">SC-900 Simulado</div>
+      <div class="proof-info">Q <span id="qCurr">1</span>/<span id="qTotal">60</span></div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="stats">
+      <div class="stat"><div class="stat-value" id="sCorr" style="color:#10b981">0</div><div class="stat-label">Corretas</div></div>
+      <div class="stat"><div class="stat-value" id="sIncorr" style="color:#ef4444">0</div><div class="stat-label">Incorretas</div></div>
+      <div class="stat"><div class="stat-value" id="sBlank" style="color:#f59e0b">60</div><div class="stat-label">Em Branco</div></div>
+      <div class="stat"><div class="stat-value" id="sRate">0%</div><div class="stat-label">Taxa</div></div>
+    </div>
+  </div>
+  <div class="question-container" id="questionContainer"></div>
+  <div class="navigation" id="navigation">
+    <button class="btn-prev" id="btnPrev" onclick="prevQ()">← Anterior</button>
+    <button class="btn-next" id="btnNext" onclick="nextQ()">Próxima →</button>
+  </div>
+</div>
+
+<!-- RESULTADO -->
+<div id="resultsScreen" class="results-screen">
+  <h2>Simulado Concluído</h2>
+  <div class="score-display" id="finalScore">0%</div>
+  <div class="score-status" id="finalStatus">—</div>
+  <div class="results-grid">
+    <div class="result-card c"><h3>Acertos</h3><div class="num" id="rCorr">0</div></div>
+    <div class="result-card i"><h3>Erros</h3><div class="num" id="rIncorr">0</div></div>
+    <div class="result-card b"><h3>Em Branco</h3><div class="num" id="rBlank">0</div></div>
+  </div>
+  <div class="detail-box"><h3>📊 Desempenho por Domínio</h3><div id="domainStats"></div></div>
+  <div class="detail-box" style="margin-top:20px;"><h3>📋 Análise por Questão</h3><div id="qReview"></div></div>
+  <div class="final-btns">
+    <button class="btn-secondary" onclick="backToStart()">← Início</button>
+    <button class="btn-primary" onclick="retryProof()">🔄 Refazer</button>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<script>
+// ============================================================
+// BANCO DE QUESTÕES — PROVA COMPLETA (60 questões)
+// ============================================================
+const prova1 = [
+{id:1,domain:"Conceitos de Segurança",sub:"Responsabilidade compartilhada",diff:"easy",type:"single",
+text:"No modelo de responsabilidade compartilhada do Azure, qual das seguintes opções é SEMPRE responsabilidade do provedor de nuvem (Microsoft), independentemente do tipo de serviço (IaaS, PaaS ou SaaS)?",
+opts:["Gerenciamento de identidades e acesso","Segurança física do datacenter","Configuração de firewall de aplicação","Criptografia de dados em repouso"],
+correct:[1],
+exp:"A Microsoft é SEMPRE responsável pela segurança física dos datacenters. Identidades, firewall de aplicação e criptografia são responsabilidades compartilhadas ou do cliente dependendo do modelo (IaaS/PaaS/SaaS)."},
+
+{id:2,domain:"Conceitos de Segurança",sub:"Defesa em profundidade",diff:"media",type:"single",
+text:"Qual camada do modelo de defesa em profundidade garante que apenas usuários autorizados possam acessar recursos específicos?",
+opts:["Camada de rede","Camada de identidade e acesso","Camada de perímetro","Camada física"],
+correct:[1],
+exp:"A camada de identidade e acesso é responsável por autenticação e autorização (MFA, acesso condicional, RBAC). Rede = conectividade entre recursos. Perímetro = proteção DDoS. Física = hardware nos datacenters."},
+
+{id:3,domain:"Conceitos de Segurança",sub:"Zero Trust",diff:"media",type:"multi",
+text:"Quais dos seguintes princípios são pilares fundamentais do modelo de segurança Zero Trust? (Escolha DUAS opções)",
+opts:["Verificar explicitamente","Confiar mas verificar periodicamente","Usar privilégio mínimo","Manter perímetro de rede forte","Centralizar todos os recursos"],
+correct:[0,2],
+exp:"Os 3 pilares Zero Trust são: (1) Verificar explicitamente, (2) Usar privilégio mínimo, (3) Assumir violação. 'Confiar mas verificar' contradiz Zero Trust. Perímetro forte é o modelo antigo de segurança."},
+
+{id:4,domain:"Conceitos de Segurança",sub:"Criptografia e hashing",diff:"media",type:"single",
+text:"Qual é a principal diferença entre criptografia e hashing?",
+opts:["Criptografia pode ser revertida com a chave correta; hashing é uma operação unidirecional","Criptografia é mais rápida que hashing","Hashing pode ser revertido; criptografia não pode","Criptografia é usada apenas para dados em trânsito"],
+correct:[0],
+exp:"Criptografia = bidirecional (revertida com chave). Hashing = unidirecional (não revertível), usado para integridade e armazenamento de senhas. A velocidade depende do algoritmo. Criptografia é usada tanto em trânsito quanto em repouso."},
+
+{id:5,domain:"Conceitos de Segurança",sub:"GRC",diff:"easy",type:"single",
+text:"O que significa GRC no contexto de segurança e conformidade?",
+opts:["General Regulatory Compliance","Governance Risk and Compliance","Global Risk Center","Government Regulatory Controls"],
+correct:[1],
+exp:"GRC = Governance, Risk and Compliance (Governança, Risco e Conformidade). É a abordagem estruturada que alinha TI com objetivos de negócio, gerencia riscos e atende a requisitos regulatórios."},
+
+{id:6,domain:"Conceitos de Segurança",sub:"Autenticação vs Autorização",diff:"easy",type:"single",
+text:"Qual afirmação descreve CORRETAMENTE a diferença entre autenticação e autorização?",
+opts:["Autenticação verifica o que você pode fazer; autorização verifica quem você é","Ambas verificam a identidade do usuário","Autenticação verifica quem você é; autorização verifica o que você pode fazer","Autorização sempre ocorre antes da autenticação"],
+correct:[2],
+exp:"Autenticação = quem você é (identidade). Autorização = o que pode fazer (permissões). A opção A está invertida. Autorização SEMPRE vem após autenticação."},
+
+{id:7,domain:"Conceitos de Segurança",sub:"Federação de identidade",diff:"hard",type:"single",
+scenario:"A Contoso Ltd. deseja permitir que seus funcionários acessem aplicativos SaaS de terceiros usando credenciais corporativas do Entra ID, sem criar contas separadas em cada aplicativo.",
+text:"Qual conceito de identidade a Contoso deve implementar?",
+opts:["Sincronização de diretórios","Federação de identidade","Provisionamento de contas","Autenticação multifator"],
+correct:[1],
+exp:"Federação de identidade permite SSO para múltiplos sistemas com um único conjunto de credenciais, usando SAML/OAuth/OIDC. Sincronização copia identidades mas não elimina contas separadas. Provisionamento cria contas nos destinos. MFA é método de autenticação."},
+
+{id:8,domain:"Conceitos de Segurança",sub:"Serviços de diretório",diff:"media",type:"single",
+text:"Qual é a principal função de um serviço de diretório como o Microsoft Entra ID?",
+opts:["Armazenar arquivos e documentos da organização","Armazenar e gerenciar informações sobre identidades e recursos da rede","Monitorar tráfego de rede em tempo real","Fazer backup de dados corporativos"],
+correct:[1],
+exp:"Serviço de diretório armazena e organiza identidades (usuários, grupos, dispositivos) e recursos em hierarquia. Arquivos = SharePoint/OneDrive. Monitoramento = ferramentas de rede. Backup = Azure Backup."},
+
+{id:9,domain:"Microsoft Entra",sub:"Entra ID - conceito",diff:"easy",type:"single",
+text:"O que é o Microsoft Entra ID (anteriormente Azure Active Directory)?",
+opts:["Um firewall baseado em nuvem","Um serviço de identidade e gerenciamento de acesso baseado em nuvem","Uma ferramenta de backup e recuperação","Um serviço de armazenamento de arquivos"],
+correct:[1],
+exp:"Microsoft Entra ID é o serviço IAM (Identity and Access Management) baseado em nuvem da Microsoft. Fornece autenticação, autorização, SSO e gerenciamento de identidades para aplicativos cloud e locais."},
+
+{id:10,domain:"Microsoft Entra",sub:"Tipos de identidade",diff:"media",type:"single",
+text:"No Microsoft Entra ID, qual tipo de identidade deve ser usado para permitir que um aplicativo acesse recursos do Azure de forma segura, sem armazenar credenciais no código?",
+opts:["Usuário convidado","Identidade gerenciada","Usuário membro","Conta de administrador global"],
+correct:[1],
+exp:"Identidades gerenciadas (Managed Identities) são gerenciadas automaticamente pelo Azure, eliminando credenciais no código. Usuário convidado = B2B. Usuário membro = conta regular. Admin global = role administrativo."},
+
+{id:11,domain:"Microsoft Entra",sub:"Identidade híbrida",diff:"media",type:"single",
+text:"Qual ferramenta a Microsoft recomenda para sincronizar identidades do Active Directory Domain Services (AD DS) local com o Microsoft Entra ID?",
+opts:["Microsoft Entra Connect","Azure VPN Gateway","Azure ExpressRoute","Microsoft Entra Domain Services"],
+correct:[0],
+exp:"Microsoft Entra Connect sincroniza identidades locais (AD DS) com Entra ID, suportando password hash sync, pass-through auth e federação. VPN/ExpressRoute = conectividade de rede. Entra Domain Services = domínio gerenciado na nuvem."},
+
+{id:12,domain:"Microsoft Entra",sub:"Métodos sem senha",diff:"easy",type:"multi",
+text:"Quais dos seguintes são métodos de autenticação sem senha suportados pelo Microsoft Entra ID? (Escolha DUAS opções)",
+opts:["Windows Hello for Business","Senha de uso único por SMS","Microsoft Authenticator (entrada por telefone)","Cartão inteligente com PIN","Sincronização de hash de senha"],
+correct:[0,2],
+exp:"Windows Hello for Business e Microsoft Authenticator (phone sign-in) são métodos sem senha. SMS OTP ainda requer código (senha temporária). Cartão inteligente requer PIN. Hash sync é método de identidade híbrida, não de autenticação."},
+
+{id:13,domain:"Microsoft Entra",sub:"Fatores MFA",diff:"easy",type:"single",
+text:"Qual dos seguintes fatores é classificado como 'algo que você possui' em MFA?",
+opts:["Sua impressão digital","Sua senha","Seu smartphone com Microsoft Authenticator","Seu nome de usuário"],
+correct:[2],
+exp:"Três fatores MFA: algo que você sabe (senha/PIN), algo que você possui (smartphone, token, cartão), algo que você é (biometria). Impressão digital = 'é'. Senha = 'sabe'. Nome de usuário = identificador, não fator."},
+
+{id:14,domain:"Microsoft Entra",sub:"Proteção de senha",diff:"media",type:"single",
+text:"Qual recurso do Microsoft Entra ID impede que usuários escolham senhas fracas ou comprometidas conhecidas?",
+opts:["Sincronização de hash de senha","Proteção de senha do Microsoft Entra","Acesso condicional","Políticas de expiração de senha"],
+correct:[1],
+exp:"Proteção de senha do Entra detecta e bloqueia senhas fracas com lista global de senhas banidas + lista personalizada da org. Funciona em Entra ID e AD DS local. Hash sync apenas sincroniza. CA controla condições de acesso. Expiração força mudança periódica."},
+
+{id:15,domain:"Microsoft Entra",sub:"Acesso condicional",diff:"media",type:"single",
+scenario:"A Fabrikam quer exigir MFA quando usuários acessam apps corporativos de fora da rede da empresa, mas não quando estão dentro da rede.",
+text:"Qual recurso do Microsoft Entra ID atende a este requisito?",
+opts:["Políticas de acesso condicional","Políticas de proteção de senha","Gerenciamento de direitos","Revisões de acesso"],
+correct:[0],
+exp:"Acesso condicional aplica controles baseados em sinais (localização = rede confiável vs. externa). Proteção de senha = qualidade de senha. Gerenciamento de direitos = pacotes de acesso. Revisões de acesso = certificação periódica."},
+
+{id:16,domain:"Microsoft Entra",sub:"Acesso condicional - configuração",diff:"hard",type:"multi",
+text:"Ao configurar uma política de acesso condicional no Entra ID, quais componentes você DEVE configurar obrigatoriamente? (Escolha DUAS opções)",
+opts:["Atribuições (usuários e aplicativos de nuvem)","Controles de acesso (concessão ou bloqueio)","Localizações nomeadas","Frequência de entrada","Dispositivos compatíveis"],
+correct:[0,1],
+exp:"Toda política CA deve ter: (1) Atribuições — a quem e a quais apps se aplica, e (2) Controles de acesso — o que acontece (conceder com MFA, bloquear, etc.). Localizações, frequência e dispositivos são condições/controles opcionais."},
+
+{id:17,domain:"Microsoft Entra",sub:"RBAC do Azure",diff:"media",type:"single",
+text:"No RBAC do Azure, qual é a função da 'função' (role)?",
+opts:["Define quem pode acessar recursos","Define o que pode ser feito (conjunto de permissões)","Define onde as permissões se aplicam","Define quando o acesso expira"],
+correct:[1],
+exp:"Role = coleção de permissões (o que pode ser feito). Security Principal = quem. Escopo (scope) = onde. PIM/Conditional Access = quando. Uma atribuição conecta os três: quem+o que+onde."},
+
+{id:18,domain:"Microsoft Entra",sub:"Funções do Entra ID",diff:"media",type:"single",
+text:"Qual função integrada do Microsoft Entra ID tem as permissões mais abrangentes e deve ser atribuída a um número muito limitado de pessoas?",
+opts:["Administrador de usuários","Administrador global","Administrador de segurança","Leitor global"],
+correct:[1],
+exp:"Administrador global tem acesso total ao Entra ID e serviços vinculados. Deve seguir princípio de menor privilégio. Admin de usuários = escopo em usuários/grupos. Admin de segurança = recursos de segurança. Leitor global = apenas leitura."},
+
+{id:19,domain:"Microsoft Entra",sub:"Entra ID Governance",diff:"hard",type:"single",
+text:"Qual recurso do Microsoft Entra ID Governance permite que usuários solicitem acesso a recursos através de pacotes de acesso pré-configurados?",
+opts:["Revisões de acesso (Access Reviews)","Gerenciamento de direitos (Entitlement Management)","Privileged Identity Management (PIM)","Termos de uso"],
+correct:[1],
+exp:"Entitlement Management gerencia identidade e acesso em escala via pacotes de acesso (grupos, apps, sites). Access Reviews = revisão periódica de permissões. PIM = funções privilegiadas JIT. Termos de uso = aceitação legal."},
+
+{id:20,domain:"Microsoft Entra",sub:"Access Reviews",diff:"media",type:"single",
+text:"Qual é o objetivo principal das Revisões de acesso (Access Reviews) do Microsoft Entra ID?",
+opts:["Provisionar automaticamente novas contas de usuário","Garantir que as permissões de acesso permaneçam apropriadas ao longo do tempo","Bloquear usuários que falharam no login múltiplas vezes","Criptografar dados em trânsito"],
+correct:[1],
+exp:"Access Reviews permitem certificação periódica de quem ainda precisa de qual acesso. Provisionar = função diferente. Bloqueio por falhas = Entra ID Protection/Smart Lockout. Criptografia = controle de segurança diferente."},
+
+{id:21,domain:"Microsoft Entra",sub:"PIM",diff:"media",type:"single",
+scenario:"A Tailspin Toys quer que administradores globais só tenham permissões elevadas quando necessário, com aprovação e justificativa obrigatórias antes da elevação.",
+text:"Qual recurso do Microsoft Entra ID Governance atende a esses requisitos?",
+opts:["Acesso condicional","Privileged Identity Management (PIM)","Revisões de acesso","Gerenciamento de direitos"],
+correct:[1],
+exp:"PIM fornece JIT (Just-In-Time) e JEA (Just-Enough-Access) para funções privilegiadas com aprovação, justificativa e MFA. CA aplica políticas em condições de acesso. Access Reviews = certificação periódica. Entitlement = pacotes de acesso."},
+
+{id:22,domain:"Microsoft Entra",sub:"Entra ID Protection",diff:"hard",type:"multi",
+text:"Quais dos seguintes tipos de detecções de risco são fornecidos pelo Microsoft Entra ID Protection? (Escolha DUAS opções)",
+opts:["Credenciais vazadas","Viagem atípica","Dispositivo não gerenciado","Aplicativo não sancionado","Arquivo criptografado por ransomware"],
+correct:[0,1],
+exp:"Entra ID Protection detecta riscos de identidade: credenciais vazadas (dark web), viagem atípica (login de local geograficamente impossível), IP anônimo, malware vinculado. Dispositivo não gerenciado = condição de CA. App não sancionado = Defender for Cloud Apps. Ransomware = Defender for Endpoint."},
+
+{id:23,domain:"Microsoft Entra",sub:"Políticas de risco",diff:"media",type:"single",
+text:"Qual ação uma política de risco de usuário no Entra ID Protection pode exigir quando detecta uma conta comprometida?",
+opts:["Deletar a conta do usuário","Exigir que o usuário altere sua senha","Desabilitar MFA para o usuário","Mover o usuário para um grupo diferente"],
+correct:[1],
+exp:"Política de risco de usuário pode exigir mudança segura de senha, bloqueando o invasor. Políticas de risco não deletam contas. Desabilitar MFA reduziria a segurança. Mover para grupo não é remediação de risco de identidade."},
+
+{id:24,domain:"Microsoft Entra",sub:"Identidade externa B2B",diff:"media",type:"single",
+text:"Qual recurso do Microsoft Entra ID permite que parceiros externos colaborem em recursos da sua organização usando suas próprias identidades corporativas?",
+opts:["Sincronização de identidade híbrida","Colaboração B2B do Microsoft Entra","Usuários membros","Identidades gerenciadas"],
+correct:[1],
+exp:"B2B (Business-to-Business) do Entra permite convidar externos como 'convidados' que usam suas próprias credenciais. Híbrida = AD DS local. Usuários membros = contas internas. Identidades gerenciadas = para aplicativos/serviços."},
+
+{id:25,domain:"Microsoft Entra",sub:"SSPR",diff:"easy",type:"single",
+text:"Qual benefício a redefinição de senha self-service (SSPR) do Microsoft Entra ID oferece?",
+opts:["Elimina a necessidade de MFA","Reduz chamadas ao help desk para redefinição de senha","Desabilita políticas de complexidade de senha","Permite que administradores vejam senhas de usuários"],
+correct:[1],
+exp:"SSPR permite que usuários redefinam senhas sem intervenção de TI, reduzindo chamadas ao suporte. SSPR pode exigir MFA (não elimina). Não desabilita políticas de senha. Administradores NUNCA devem ver senhas em sistemas seguros."},
+
+{id:26,domain:"Soluções de Segurança",sub:"Azure DDoS Protection",diff:"easy",type:"single",
+text:"Qual camada do Azure DDoS Protection fornece proteção básica automaticamente habilitada para todos os recursos do Azure sem custo adicional?",
+opts:["DDoS Protection Standard","DDoS Protection Basic","DDoS Protection Premium","DDoS Protection Enterprise"],
+correct:[1],
+exp:"DDoS Basic = habilitado automaticamente sem custo em toda plataforma Azure, protege contra ataques L3/L4 comuns. Standard = pago, com mitigação avançada. Premium e Enterprise não existem nessa denominação."},
+
+{id:27,domain:"Soluções de Segurança",sub:"Azure Firewall vs NSG",diff:"media",type:"single",
+text:"Qual é a principal característica que diferencia o Azure Firewall de um Network Security Group (NSG)?",
+opts:["Azure Firewall é stateful; NSG é stateless","Azure Firewall é um serviço gerenciado de camada 7; NSG fornece filtragem de camada 4","NSG pode filtrar tráfego de saída; Azure Firewall não pode","NSG é pago; Azure Firewall é gratuito"],
+correct:[1],
+exp:"Azure Firewall = L7 gerenciado (FQDN, threat intelligence, logging centralizado). NSG = filtro L4 por 5-tuplas (IP src/dst, porta src/dst, protocolo). Ambos são stateful. Ambos filtram entrada/saída. Azure Firewall é pago; NSG gratuito."},
+
+{id:28,domain:"Soluções de Segurança",sub:"Web Application Firewall",diff:"media",type:"single",
+text:"Em qual serviço do Azure você pode habilitar o WAF (Web Application Firewall) para proteger aplicações web contra SQL injection e cross-site scripting?",
+opts:["Azure Bastion","Azure Application Gateway","Network Security Group (NSG)","Azure Key Vault"],
+correct:[1],
+exp:"WAF pode ser implantado em Azure Application Gateway, Azure Front Door e Azure CDN, protegendo baseado em regras OWASP. Bastion = RDP/SSH seguro. NSG = L4. Key Vault = segredos/chaves."},
+
+{id:29,domain:"Soluções de Segurança",sub:"Segmentação de rede",diff:"easy",type:"single",
+text:"Qual recurso do Azure permite segmentar e isolar recursos criando redes logicamente isoladas na nuvem?",
+opts:["Grupos de segurança de rede (NSG)","Redes virtuais do Azure (VNets)","Azure Firewall","Azure ExpressRoute"],
+correct:[1],
+exp:"VNets criam redes privadas logicamente isoladas no Azure. NSGs filtram tráfego mas não criam redes isoladas. Azure Firewall protege redes. ExpressRoute = conexão privada para o Azure, não segmentação interna."},
+
+{id:30,domain:"Soluções de Segurança",sub:"Network Security Groups",diff:"media",type:"single",
+text:"Network Security Groups (NSGs) do Azure filtram tráfego de rede baseado em quais informações?",
+opts:["Apenas endereço IP de origem","Endereço IP de origem e destino, portas de origem e destino, e protocolo","Apenas conteúdo da aplicação (camada 7)","Nome de usuário e função do Azure"],
+correct:[1],
+exp:"NSGs = filtro L4 por 5-tuplas: IP de origem, IP de destino, porta de origem, porta de destino e protocolo. Não inspeciona conteúdo (L7 = WAF/Firewall). Não usa identidade de usuário."},
+
+{id:31,domain:"Soluções de Segurança",sub:"Azure Bastion",diff:"easy",type:"single",
+text:"Qual problema de segurança o Azure Bastion resolve?",
+opts:["Criptografia de dados em repouso","Exposição de portas RDP e SSH públicas na Internet","Ataques DDoS em aplicações web","Vazamento de credenciais"],
+correct:[1],
+exp:"Azure Bastion fornece conectividade RDP/SSH segura direto no portal Azure via TLS, sem expor IPs públicos nem portas 3389/22. Reduz superficie de ataque. Não lida com criptografia em repouso, DDoS ou credenciais."},
+
+{id:32,domain:"Soluções de Segurança",sub:"Azure Key Vault",diff:"easy",type:"single",
+text:"Qual é o objetivo principal do Azure Key Vault?",
+opts:["Armazenar arquivos e documentos","Armazenar e gerenciar segredos, chaves e certificados","Monitorar logs de segurança","Fazer backup de máquinas virtuais"],
+correct:[1],
+exp:"Azure Key Vault armazena de forma segura: segredos (senhas, strings de conexão, API keys), chaves criptográficas (RSA, EC) e certificados X.509. Logs = Azure Monitor/Sentinel. Backup = Azure Backup."},
+
+{id:33,domain:"Soluções de Segurança",sub:"Key Vault - casos de uso",diff:"media",type:"single",
+scenario:"Uma aplicação precisa acessar uma chave de API de um serviço de terceiros.",
+text:"Onde, de acordo com as melhores práticas de segurança do Azure, essa chave deve ser armazenada?",
+opts:["No código-fonte da aplicação","Em um arquivo de configuração na VM","No Azure Key Vault","Em uma variável de ambiente não criptografada"],
+correct:[2],
+exp:"Credenciais nunca devem estar em código, arquivos de configuração ou variáveis não criptografadas (alta exposição, histórico de versão, logs). Azure Key Vault = armazenamento seguro com acesso controlado, auditoria e rotação."},
+
+{id:34,domain:"Soluções de Segurança",sub:"Defender for Cloud",diff:"easy",type:"single",
+text:"O que é o Microsoft Defender for Cloud?",
+opts:["Uma solução SIEM para agregar logs","Uma plataforma de gerenciamento de postura de segurança em nuvem (CSPM) e proteção de carga de trabalho (CWPP)","Um firewall de aplicação web","Um serviço de backup de nuvem"],
+correct:[1],
+exp:"Defender for Cloud = CSPM (avaliação contínua, recomendações, secure score) + CWPP (proteção contra ameaças para cargas de trabalho Azure/híbrido/multi-cloud). Sentinel = SIEM. WAF = Application Gateway. Backup = Azure Backup."},
+
+{id:35,domain:"Soluções de Segurança",sub:"Secure Score",diff:"media",type:"single",
+text:"O que representa o Secure Score no Microsoft Defender for Cloud?",
+opts:["O número total de recursos Azure implantados","Uma medida da postura de segurança com base em recomendações de segurança implementadas","O custo mensal dos serviços de segurança","O número de ataques bloqueados"],
+correct:[1],
+exp:"Secure Score = medida percentual da postura de segurança. Quanto maior, menor o risco identificado. Calculado com base em controles e recomendações implementadas. Não mede recursos, custos nem ataques bloqueados."},
+
+{id:36,domain:"Soluções de Segurança",sub:"Azure Policy",diff:"hard",type:"single",
+text:"No contexto do Defender for Cloud e Azure Policy, qual é a diferença entre uma política e uma iniciativa?",
+opts:["Não há diferença; são termos sinônimos","Uma política é uma regra individual; uma iniciativa é uma coleção de políticas agrupadas","Uma iniciativa é menor que uma política","Políticas são gratuitas; iniciativas são pagas"],
+correct:[1],
+exp:"Política = regra individual (ex: 'VMs devem ter criptografia de disco'). Iniciativa (conjunto de políticas) = coleção agrupada para atingir objetivo maior (ex: Azure Security Benchmark). Não há diferença de custo entre ambas."},
+
+{id:37,domain:"Soluções de Segurança",sub:"Proteção de carga de trabalho",diff:"media",type:"multi",
+text:"Quais planos do Microsoft Defender for Cloud fornecem proteção contra ameaças para cargas de trabalho específicas no Azure? (Escolha DUAS opções)",
+opts:["Defender for Servers","Defender for Storage","Defender for DevOps","Defender for Endpoint","Defender for Office 365"],
+correct:[0,1],
+exp:"Defender for Cloud oferece planos de proteção de carga de trabalho como Defender for Servers, Defender for Storage, Defender for SQL, Defender for Containers, Defender for App Service, Defender for Key Vault. Defender for DevOps = segurança de código/pipeline (não carga de trabalho em runtime). Defender for Endpoint e Office 365 = componentes do Defender XDR, não Defender for Cloud."},
+
+{id:38,domain:"Soluções de Segurança",sub:"SIEM e SOAR",diff:"media",type:"single",
+text:"Qual é a principal diferença entre SIEM e SOAR?",
+opts:["SIEM coleta e analisa dados de segurança; SOAR automatiza resposta a incidentes","SIEM é para nuvem; SOAR é para on-premises","Não há diferença; são termos sinônimos","SOAR é mais antigo que SIEM"],
+correct:[0],
+exp:"SIEM = coleta, agrega, analisa e alerta sobre eventos de múltiplas fontes. SOAR = automatiza workflows de resposta e orquestra ações entre ferramentas de segurança. Ambos operam em nuvem ou on-premises. SOAR é mais recente."},
+
+{id:39,domain:"Soluções de Segurança",sub:"Microsoft Sentinel",diff:"easy",type:"single",
+text:"O que é o Microsoft Sentinel?",
+opts:["Uma solução SIEM e SOAR nativa da nuvem","Um firewall de próxima geração","Uma ferramenta de gerenciamento de patches","Um serviço de autenticação multifator"],
+correct:[0],
+exp:"Microsoft Sentinel = SIEM + SOAR nativo da nuvem. Fornece análise inteligente de segurança e inteligência contra ameaças em toda a empresa. Azure Firewall = firewall. Patches = Update Management. MFA = Entra ID."},
+
+{id:40,domain:"Soluções de Segurança",sub:"Sentinel - componentes",diff:"media",type:"multi",
+text:"Quais componentes são fundamentais para a operação do Microsoft Sentinel? (Escolha DUAS opções)",
+opts:["Conectores de dados para ingestão de eventos","Regras de análise para detectar ameaças","Políticas de retenção de email","Grupos de segurança de rede","Certificados SSL"],
+correct:[0,1],
+exp:"Sentinel opera com: conectores de dados (ingestão de fontes diversas), regras de análise (detecção via KQL), workbooks (visualização), incidentes (investigação) e playbooks (automação). Email, NSGs e SSL não são componentes do Sentinel."},
+
+{id:41,domain:"Soluções de Segurança",sub:"Sentinel - Workbooks",diff:"media",type:"single",
+text:"Qual é o objetivo dos Workbooks no Microsoft Sentinel?",
+opts:["Automatizar resposta a incidentes","Criar visualizações interativas de dados de segurança","Armazenar segredos e chaves","Bloquear endereços IP maliciosos"],
+correct:[1],
+exp:"Workbooks = painéis interativos para visualização e análise de dados de segurança (texto, KQL, métricas, parâmetros). Playbooks = automatizam resposta. Key Vault = segredos. Regras de análise/playbooks podem bloquear IPs."},
+
+{id:42,domain:"Soluções de Segurança",sub:"Defender XDR - conceito",diff:"media",type:"single",
+text:"O que significa XDR no Microsoft Defender XDR?",
+opts:["Extended Detection and Response","External Data Repository","Extra Defense Resources","Extreme Disaster Recovery"],
+correct:[0],
+exp:"XDR = Extended Detection and Response. Microsoft Defender XDR coordena detecção, prevenção, investigação e resposta entre endpoints, identidades, email e aplicativos em uma suíte unificada."},
+
+{id:43,domain:"Soluções de Segurança",sub:"Defender XDR - componentes",diff:"easy",type:"multi",
+text:"Quais dos seguintes fazem parte da suíte Microsoft Defender XDR (focada em proteção do ecossistema Microsoft 365)? (Escolha DUAS opções)",
+opts:["Microsoft Defender for Endpoint","Microsoft Defender for Office 365","Microsoft Defender for Servers","Microsoft Defender for Storage","Microsoft Defender for SQL"],
+correct:[0,1],
+exp:"Defender XDR (M365): Defender for Endpoint (endpoints), Defender for Office 365 (email/colaboração), Defender for Identity (identidades AD), Defender for Cloud Apps (CASB) e Vulnerability Management. Defender for Servers, Storage e SQL = planos do Defender for Cloud (infraestrutura), não da suíte XDR."},
+
+{id:44,domain:"Soluções de Segurança",sub:"Defender for Office 365 - Safe Links",diff:"media",type:"single",
+scenario:"A Northwind Traders está preocupada com phishing via email e links maliciosos. Os usuários frequentemente clicam em links suspeitos.",
+text:"Qual recurso do Microsoft Defender for Office 365 pode proteger contra isso?",
+opts:["Safe Links","Azure Firewall","Network Security Groups","Azure Bastion"],
+correct:[0],
+exp:"Safe Links verifica URLs em tempo de clique, protegendo contra phishing e malware. Azure Firewall = rede Azure. NSG = filtragem de rede L4. Bastion = acesso seguro a VMs."},
+
+{id:45,domain:"Soluções de Segurança",sub:"Defender for Office 365 - recursos",diff:"media",type:"multi",
+text:"Quais recursos de proteção são fornecidos pelo Microsoft Defender for Office 365? (Escolha DUAS opções)",
+opts:["Safe Attachments","Safe Links","Proteção DDoS de rede","Criptografia de disco","Gerenciamento de identidades privilegiadas"],
+correct:[0,1],
+exp:"Defender for Office 365: Safe Attachments (sandbox para anexos), Safe Links (URLs), proteção anti-phishing, anti-spoofing. DDoS = Azure DDoS Protection. Criptografia disco = Azure Disk Encryption. PIM = Microsoft Entra ID Governance."},
+
+{id:46,domain:"Soluções de Segurança",sub:"Defender for Endpoint",diff:"media",type:"single",
+text:"Qual é o foco principal do Microsoft Defender for Endpoint?",
+opts:["Proteção de aplicações web","Proteção de endpoints (desktops, laptops, servidores, dispositivos móveis)","Proteção de banco de dados","Proteção de armazenamento em nuvem"],
+correct:[1],
+exp:"Defender for Endpoint = proteção de endpoints (Windows, macOS, Linux, Android, iOS) contra ameaças avançadas. WAF = apps web. Defender for SQL = bancos de dados. Defender for Storage = armazenamento."},
+
+{id:47,domain:"Soluções de Segurança",sub:"Defender for Cloud Apps",diff:"hard",type:"single",
+text:"Qual tipo de solução é o Microsoft Defender for Cloud Apps (anteriormente Microsoft Cloud App Security)?",
+opts:["Firewall de aplicação web (WAF)","Cloud Access Security Broker (CASB)","Plataforma de gerenciamento de identidade","SIEM"],
+correct:[1],
+exp:"Defender for Cloud Apps = CASB. Fornece visibilidade, controle de dados e análise para identificar e combater ameaças em serviços cloud da Microsoft e terceiros. WAF = protege web apps. Entra ID = plataforma identidade. Sentinel = SIEM."},
+
+{id:48,domain:"Soluções de Segurança",sub:"Defender for Identity",diff:"media",type:"single",
+text:"Qual é o foco principal do Microsoft Defender for Identity?",
+opts:["Monitorar e proteger identidades e comportamentos em ambientes Active Directory locais","Proteger máquinas virtuais do Azure","Proteger aplicativos SaaS","Fornecer autenticação multifator"],
+correct:[0],
+exp:"Defender for Identity (ex-Azure ATP) usa sinais do AD local para identificar, detectar e investigar ameaças avançadas, identidades comprometidas e ações internas maliciosas. Defender for Servers = VMs. Defender for Cloud Apps = SaaS. MFA = Entra ID."},
+
+{id:49,domain:"Soluções de Segurança",sub:"Vulnerability Management",diff:"media",type:"single",
+text:"Qual capacidade o Microsoft Defender Vulnerability Management fornece?",
+opts:["Gerenciamento de senhas de usuários","Descoberta e priorização de vulnerabilidades em endpoints","Proteção contra ataques DDoS","Criptografia de emails"],
+correct:[1],
+exp:"Defender Vulnerability Management = descoberta contínua de ativos, avaliação baseada em risco, priorização inteligente e correção de vulnerabilidades em endpoints. Senhas = Entra ID. DDoS = Azure DDoS Protection. Criptografia email = Purview."},
+
+{id:50,domain:"Soluções de Segurança",sub:"Portal Microsoft Defender",diff:"easy",type:"single",
+text:"Qual é o portal unificado para gerenciar e monitorar o Microsoft Defender XDR?",
+opts:["Portal do Azure","Portal do Microsoft Defender (security.microsoft.com)","Centro de administração do Microsoft 365","Portal Microsoft Purview"],
+correct:[1],
+exp:"security.microsoft.com = portal unificado Defender XDR (Endpoint, Office 365, Identity, Cloud Apps). portal.azure.com = recursos Azure. admin.microsoft.com = admin M365 geral. compliance.microsoft.com = Purview."},
+
+{id:51,domain:"Soluções de Conformidade",sub:"Service Trust Portal",diff:"easy",type:"single",
+text:"Qual portal fornece acesso a relatórios de auditoria independentes (ISO, SOC, NIST) e informações sobre como a Microsoft protege dados nos serviços de nuvem?",
+opts:["Portal do Azure","Service Trust Portal","Portal Microsoft Purview","Portal Microsoft Entra"],
+correct:[1],
+exp:"Service Trust Portal (servicetrust.microsoft.com) = relatórios de auditoria terceiros (ISO 27001, SOC 1/2/3, FedRAMP), documentos de conformidade, whitepapers, guias e avaliações de risco. Portal Azure = recursos. Purview = conformidade da org. Entra = identidades."},
+
+{id:52,domain:"Soluções de Conformidade",sub:"Privacidade Microsoft",diff:"media",type:"single",
+text:"De acordo com os princípios de privacidade da Microsoft, quem é o proprietário dos dados do cliente armazenados nos serviços de nuvem?",
+opts:["A Microsoft é proprietária de todos os dados","O cliente é proprietário de seus dados","A propriedade é compartilhada igualmente","Ninguém é proprietário; os dados são públicos"],
+correct:[1],
+exp:"Princípios de privacidade Microsoft: cliente mantém propriedade total dos dados. Microsoft não usa dados para publicidade, não minera para marketing. A Microsoft atua como processador, não proprietário dos dados."},
+
+{id:53,domain:"Soluções de Conformidade",sub:"Microsoft Priva",diff:"hard",type:"single",
+text:"Qual é o foco principal do Microsoft Priva?",
+opts:["Gerenciamento de vulnerabilidades","Gerenciamento de riscos de privacidade e solicitações de titulares de dados","Proteção contra ataques DDoS","Autenticação multifator"],
+correct:[1],
+exp:"Microsoft Priva = gerenciamento de riscos de privacidade + solicitações de direitos dos titulares (GDPR/DSRs). Fornece visibilidade sobre dados pessoais e identifica riscos de privacidade. Vulnerabilidades = Defender VM. DDoS = Azure DDoS. MFA = Entra ID."},
+
+{id:54,domain:"Soluções de Conformidade",sub:"Portal Purview",diff:"media",type:"single",
+text:"Qual portal você usaria para acessar soluções de conformidade como Compliance Manager, proteção de informações e gerenciamento de riscos internos?",
+opts:["Portal do Azure","Service Trust Portal","Portal de conformidade do Microsoft Purview","Portal do Microsoft Defender"],
+correct:[2],
+exp:"compliance.microsoft.com (Portal Purview) = Compliance Manager, proteção de informações, DLP, Insider Risk, eDiscovery, gerenciamento de registros. Portal Azure = recursos. Service Trust = informações conformidade Microsoft. Defender = segurança."},
+
+{id:55,domain:"Soluções de Conformidade",sub:"Compliance Manager",diff:"media",type:"single",
+text:"O que é o Compliance Manager no Microsoft Purview?",
+opts:["Uma ferramenta para gerenciar senhas de conformidade","Uma solução para ajudar a gerenciar conformidade regulatória através de avaliações e pontuação de conformidade","Um firewall para aplicações de conformidade","Uma ferramenta de backup de dados"],
+correct:[1],
+exp:"Compliance Manager = ferramenta de avaliação de risco no Purview com avaliações pré-construídas para regulamentações (GDPR, ISO 27001), rastreamento de ações de melhoria e pontuação de conformidade."},
+
+{id:56,domain:"Soluções de Conformidade",sub:"Compliance Score",diff:"easy",type:"single",
+text:"O que representa a pontuação de conformidade (compliance score) no Compliance Manager?",
+opts:["O número total de regulamentações que a organização segue","Uma medida do progresso na implementação de ações de melhoria de conformidade","O custo de conformidade","O número de auditorias realizadas"],
+correct:[1],
+exp:"Compliance Score = percentual baseado em ações obrigatórias e discricionárias implementadas para atender controles de regulamentações. Não conta regulamentações, custo nem auditorias."},
+
+{id:57,domain:"Soluções de Conformidade",sub:"Classificação de dados",diff:"media",type:"single",
+scenario:"A Adatum precisa identificar automaticamente documentos com PII como CPF, cartões de crédito e passaportes em todo o ambiente Microsoft 365.",
+text:"Qual recurso do Microsoft Purview ajuda com isso?",
+opts:["Classificadores treináveis e tipos de informações confidenciais","Azure Firewall","Políticas de retenção","Revisões de acesso"],
+correct:[0],
+exp:"Purview fornece SITs (tipos de informações confidenciais) para padrões específicos (CPF, cartão) e classificadores treináveis (machine learning) para tipos de conteúdo. Firewall não classifica docs. Retenção = ciclo de vida. Revisões = permissões."},
+
+{id:58,domain:"Soluções de Conformidade",sub:"Content e Activity Explorer",diff:"hard",type:"multi",
+text:"Quais afirmações são verdadeiras sobre Content Explorer e Activity Explorer no Microsoft Purview? (Escolha DUAS opções)",
+opts:["Content Explorer mostra visão agregada de conteúdo com rótulos e tipos de informações confidenciais","Activity Explorer mostra ações realizadas em conteúdo rotulado","Content Explorer permite editar documentos diretamente","Activity Explorer cria automaticamente políticas de DLP","Ambos são ferramentas de firewall"],
+correct:[0,1],
+exp:"Content Explorer = visibilidade sobre onde conteúdo classificado reside (somente leitura). Activity Explorer = atividades realizadas em conteúdo com rótulos (criação, modificação, compartilhamento). Nenhum permite edição direta, cria políticas DLP automaticamente nem é firewall."},
+
+{id:59,domain:"Soluções de Conformidade",sub:"Sensitivity Labels",diff:"media",type:"single",
+text:"Qual é o objetivo dos rótulos de confidencialidade (sensitivity labels) no Microsoft Purview?",
+opts:["Rotular recursos do Azure por departamento","Classificar e proteger dados com criptografia, marcas visuais e proteções de acesso","Rotular usuários por nível de privilégio","Rotular ataques de segurança por severidade"],
+correct:[1],
+exp:"Sensitivity labels classificam e protegem dados: criptografia, marcas de conteúdo (marca d'água, cabeçalho), prevenção de perda de dados e proteção de containers (Teams, grupos M365, sites SharePoint). Tags Azure = recursos. Funções Entra = usuários."},
+
+{id:60,domain:"Soluções de Conformidade",sub:"DLP",diff:"media",type:"single",
+text:"Qual é o objetivo principal das políticas de DLP (Data Loss Prevention) no Microsoft Purview?",
+opts:["Prevenir perda de dados devido a falhas de hardware","Detectar e prevenir compartilhamento não autorizado ou acidental de informações confidenciais","Fazer backup de dados críticos","Comprimir dados para economizar espaço"],
+correct:[1],
+exp:"DLP detecta conteúdo sensível (SITs, rótulos) e aplica proteções (bloquear compartilhamento, exigir justificativa, notificar usuários). DLP previne vazamento, não falhas de hardware. Backup = Azure Backup. Compressão = armazenamento."}
+];
+
+// ============================================================
+// MINI SIMULADO FINAL (25 questões inéditas)
+// ============================================================
+const prova2 = [
+{id:"S1",domain:"Conceitos de Segurança",sub:"Zero Trust",diff:"media",type:"single",
+text:"Qual afirmação melhor descreve o princípio 'Assumir violação' (Assume Breach) no modelo Zero Trust?",
+opts:["Assumir que todos os usuários são maliciosos e bloquear todo acesso","Projetar sistemas assumindo que invasores já podem estar dentro da rede, minimizando raio de explosão e segmentando acesso","Assumir que a rede perimetral foi violada e mover todos os recursos para a nuvem","Assumir que todos os dados foram vazados e criptografar tudo"],
+correct:[1],
+exp:"'Assumir violação' = projetar arquitetura partindo do pressuposto de que invasores podem já ter acesso. Leva a: segmentação, menor privilégio, verificação explícita, criptografia E2E e análise comportamental para detectar movimentação lateral."},
+
+{id:"S2",domain:"Conceitos de Segurança",sub:"Criptografia",diff:"easy",type:"single",
+text:"Qual é a principal diferença entre dados em repouso e dados em trânsito?",
+opts:["Dados em repouso são mais antigos; dados em trânsito são recentes","Dados em repouso estão armazenados (discos, bancos de dados); dados em trânsito estão sendo transmitidos pela rede","Dados em repouso não podem ser criptografados; dados em trânsito podem","Não há diferença; são termos sinônimos"],
+correct:[1],
+exp:"Dados em repouso = armazenados (discos, BD, nuvem). Dados em trânsito = sendo transferidos pela rede/internet. Ambos devem ser criptografados, com métodos diferentes (AES para repouso, TLS para trânsito)."},
+
+{id:"S3",domain:"Conceitos de Segurança",sub:"Identidade como perímetro",diff:"media",type:"single",
+text:"Por que a identidade é considerada o 'novo perímetro de segurança' em ambientes de nuvem modernos?",
+opts:["Porque perímetros de rede tradicionais não existem mais em nuvem","Porque usuários acessam recursos de qualquer lugar, tornando a verificação de identidade mais crítica que localização de rede","Porque senhas são mais seguras que firewalls","Porque a identidade é mais barata de implementar"],
+correct:[1],
+exp:"Com mobilidade, trabalho remoto, SaaS e multi-cloud, o perímetro de rede tornou-se poroso. A identidade tornou-se o plano de controle fundamental: verificar e proteger identidades é mais crítico que confiar na localização de rede."},
+
+{id:"S4",domain:"Microsoft Entra",sub:"Identidade híbrida - PHS vs PTA",diff:"media",type:"single",
+text:"Qual é a diferença entre Password Hash Synchronization (PHS) e Pass-Through Authentication (PTA) no Microsoft Entra Connect?",
+opts:["PHS sincroniza hashes de senhas para a nuvem (autenticação no Entra ID); PTA valida senhas no AD local sem enviar hashes","PHS é mais seguro que PTA","PTA sincroniza senhas; PHS valida localmente","Ambos funcionam da mesma forma"],
+correct:[0],
+exp:"PHS = hashes de senhas sincronizados para nuvem (autenticação ocorre no Entra ID). PTA = nenhum hash é enviado; agente valida a senha diretamente no AD local. PTA é mais complexo mas atende requisitos de não enviar credenciais para nuvem."},
+
+{id:"S5",domain:"Microsoft Entra",sub:"SSPR - requisitos",diff:"media",type:"single",
+text:"Quantos métodos de autenticação o Microsoft Entra ID requer que um usuário registre para usar o SSPR (Self-Service Password Reset)?",
+opts:["Pelo menos 1 método","Pelo menos 2 métodos (configurável pelo admin)","Exatamente 3 métodos","SSPR não requer método de autenticação registrado"],
+correct:[1],
+exp:"SSPR requer que administradores configurem o número de métodos necessários (mínimo recomendado = 2) para segurança e redundância. Se o usuário perder acesso a um método, ainda pode usar o outro para redefinir a senha."},
+
+{id:"S6",domain:"Microsoft Entra",sub:"Dispositivos no Entra ID",diff:"media",type:"single",
+text:"Qual é a diferença entre dispositivos 'Registrados' e 'Ingressados' (Joined) no Microsoft Entra ID?",
+opts:["Registrados = BYOD pessoal com acesso corporativo limitado; Ingressados = dispositivos corporativos totalmente gerenciados pelo Entra ID","Registrados = dispositivos de administradores; Ingressados = dispositivos de usuários comuns","Não há diferença","Ingressados = BYOD; Registrados = corporativo"],
+correct:[0],
+exp:"Entra Registered = BYOD (dispositivos pessoais com acesso a recursos corporativos, menor controle). Entra Joined = dispositivos corporativos totalmente gerenciados pelo Entra ID (Windows 10/11), com políticas completas e SSO nativo."},
+
+{id:"S7",domain:"Microsoft Entra",sub:"Acesso condicional - sessão",diff:"hard",type:"single",
+text:"Qual controle de sessão no acesso condicional do Entra ID permite limitar funcionalidades dentro de aplicativos cloud (como bloquear download ou impressão)?",
+opts:["Frequência de entrada","Aplicar restrições impostas por aplicativo (app-enforced restrictions)","Persistência do navegador","Require managed device"],
+correct:[1],
+exp:"App-enforced restrictions passa informações para apps compatíveis (Exchange Online, SharePoint) que então aplicam restrições: bloquear download, impressão ou acesso offline. Frequência = quantas vezes reautenticar. Persistência = cookies de sessão."},
+
+{id:"S8",domain:"Microsoft Entra",sub:"Funções personalizadas",diff:"media",type:"single",
+text:"Qual licença do Microsoft Entra ID é necessária para criar funções personalizadas (custom roles)?",
+opts:["Microsoft Entra ID Free","Microsoft Entra ID P1","Microsoft Entra ID P2","Qualquer licença do Microsoft 365"],
+correct:[2],
+exp:"Funções personalizadas no Entra ID requerem licença P1 ou P2. Permitem criar roles específicas com permissões granulares além das integradas, seguindo princípio de menor privilégio. A versão Free não suporta custom roles."},
+
+{id:"S9",domain:"Microsoft Entra",sub:"Termos de uso",diff:"easy",type:"single",
+text:"Para que serve o recurso 'Termos de uso' (Terms of Use) no Microsoft Entra ID?",
+opts:["Exibir e requerer aceitação de declarações legais ou políticas antes de acessar recursos","Definir termos de licenciamento de software","Configurar políticas de senha","Gerenciar contratos com fornecedores"],
+correct:[0],
+exp:"Termos de uso do Entra ID apresenta informações que usuários devem aceitar antes de acessar recursos (políticas de privacidade, acordos de confidencialidade, BYOD). Pode ser integrado com políticas de acesso condicional."},
+
+{id:"S10",domain:"Microsoft Entra",sub:"Controle de acesso contínuo (CAE)",diff:"hard",type:"single",
+text:"O que o Controle de Acesso Contínuo (Continuous Access Evaluation - CAE) do Microsoft Entra ID permite?",
+opts:["Avaliação de políticas de acesso condicional continuamente durante uma sessão, não apenas no login inicial","Avaliação contínua de vulnerabilidades em dispositivos","Backup contínuo de dados do Entra ID","Monitoramento contínuo de tráfego de rede"],
+correct:[0],
+exp:"CAE avalia e aplica eventos críticos (desabilitação de conta, revogação de senha, mudança de localização) quase em tempo real durante sessões ativas, sem esperar expiração do token (tipicamente 1 hora). Melhora significativamente a postura de segurança."},
+
+{id:"S11",domain:"Soluções de Segurança",sub:"Azure Firewall Manager",diff:"media",type:"single",
+text:"O que é o Azure Firewall Manager?",
+opts:["Uma ferramenta para gerenciar centralmente políticas de segurança e rotas para múltiplos Azure Firewalls","Um tipo especial de firewall para bancos de dados","Uma ferramenta de monitoramento de tráfego","Um serviço de backup de configurações de firewall"],
+correct:[0],
+exp:"Azure Firewall Manager = gerenciamento central de políticas de segurança e rotas para múltiplos Azure Firewalls em hubs virtuais (Virtual WAN) ou VNets hub. Permite governança centralizada de firewalls distribuídos."},
+
+{id:"S12",domain:"Soluções de Segurança",sub:"Azure Key Vault - tipos",diff:"media",type:"multi",
+text:"Quais tipos de objetos podem ser armazenados no Azure Key Vault? (Escolha DUAS opções)",
+opts:["Segredos (como strings de conexão e senhas)","Chaves criptográficas","Máquinas virtuais","Contêineres Docker","Arquivos de log"],
+correct:[0,1],
+exp:"Azure Key Vault armazena 3 tipos: (1) Segredos = strings como senhas, API keys, strings de conexão; (2) Chaves criptográficas = RSA/EC para operações cripto; (3) Certificados X.509. VMs, containers e logs não são armazenados em Key Vault."},
+
+{id:"S13",domain:"Soluções de Segurança",sub:"Defender for Cloud - multi-cloud",diff:"media",type:"single",
+text:"Além do Azure, quais outras plataformas de nuvem o Microsoft Defender for Cloud pode proteger?",
+opts:["Apenas Azure","Azure e AWS","Azure, AWS e Google Cloud Platform (GCP)","Funciona apenas on-premises"],
+correct:[2],
+exp:"Defender for Cloud fornece proteção multi-cloud: Azure, AWS e GCP. Conecta contas AWS/GCP e usa agentes e extensões para coletar dados de segurança de outras plataformas além do Azure."},
+
+{id:"S14",domain:"Soluções de Segurança",sub:"Defender for Cloud Apps - Cloud Discovery",diff:"media",type:"single",
+text:"Qual recurso do Microsoft Defender for Cloud Apps permite descobrir aplicativos cloud não autorizados (shadow IT) sendo usados na organização?",
+opts:["Cloud Discovery","App Governance","Conditional Access App Control","Safe Attachments"],
+correct:[0],
+exp:"Cloud Discovery analisa logs de tráfego (firewalls, proxies) para identificar apps cloud usados na organização. Fornece visibilidade sobre shadow IT, usuários, dados e riscos. App Governance = controle de apps OAuth. Safe Attachments = Defender Office 365."},
+
+{id:"S15",domain:"Soluções de Segurança",sub:"Conditional Access App Control",diff:"hard",type:"single",
+text:"O que permite o recurso 'Conditional Access App Control' no Microsoft Defender for Cloud Apps?",
+opts:["Criar políticas de acesso condicional no Entra ID","Aplicar controles de sessão em tempo real para apps cloud (como bloquear download de dados sensíveis)","Controlar quais apps podem ser instalados em dispositivos","Aprovar ou bloquear apps cloud descobertos"],
+correct:[1],
+exp:"CA App Control (integrado com CA do Entra) = proxy reverso que monitora e controla sessões em tempo real. Permite bloquear downloads, aplicar proteção de dados, exigir autenticação step-up durante a sessão ativa no app."},
+
+{id:"S16",domain:"Soluções de Segurança",sub:"Microsoft Sentinel - UEBA",diff:"hard",type:"single",
+text:"O que significa UEBA no contexto do Microsoft Sentinel?",
+opts:["User Equipment Backup Analysis","User and Entity Behavior Analytics","Universal Event and Baseline Aggregation","Unified Endpoint Behavioral Assessment"],
+correct:[1],
+exp:"UEBA = User and Entity Behavior Analytics. No Sentinel, usa machine learning para estabelecer baselines comportamentais de usuários e entidades (hosts, apps) e detectar anomalias indicando comprometimento."},
+
+{id:"S17",domain:"Soluções de Segurança",sub:"Sentinel - conectores",diff:"media",type:"multi",
+text:"Quais tipos de conectores de dados o Microsoft Sentinel suporta para ingestão de eventos? (Escolha DUAS opções)",
+opts:["Conectores de serviço para serviço da Microsoft","Conectores baseados em agente (como Syslog, CEF)","Conectores de rede social","Conectores de blockchain","Conectores de realidade virtual"],
+correct:[0,1],
+exp:"Sentinel suporta: (1) Service-to-service Microsoft (Office 365, Entra ID, Defender XDR), (2) Conectores baseados em agente (Syslog, CEF para appliances de segurança), (3) APIs e conectores personalizados. Redes sociais, blockchain e realidade virtual não são fontes de segurança suportadas."},
+
+{id:"S18",domain:"Soluções de Segurança",sub:"Defender for Office 365 - anti-phishing",diff:"media",type:"single",
+text:"Qual tecnologia do Microsoft Defender for Office 365 protege contra ataques de representação (impersonation) onde atacantes se passam por executivos ou parceiros confiáveis?",
+opts:["Safe Links","Safe Attachments","Proteção anti-phishing com inteligência de caixa postal","Azure Firewall"],
+correct:[2],
+exp:"Proteção anti-phishing do Defender for Office 365 usa machine learning e inteligência de caixa postal para detectar quando remetentes imitam usuários internos, domínios da org ou parceiros externos. Safe Links = URLs. Safe Attachments = anexos."},
+
+{id:"S19",domain:"Soluções de Segurança",sub:"Defender for Endpoint - ASR",diff:"media",type:"single",
+text:"Qual recurso do Microsoft Defender for Endpoint permite criar regras para bloquear comportamentos suspeitos como execução de macros do Office ou criação de processos filhos por apps do Adobe?",
+opts:["Firewall do Windows Defender","Regras de redução de superfície de ataque (ASR)","Controle de aplicativos","Antivírus em tempo real"],
+correct:[1],
+exp:"Regras ASR (Attack Surface Reduction) bloqueiam comportamentos comuns de malware: macros Office, JavaScript/VBScript de executar código baixado, processos filhos de clientes de email. Firewall = rede. Controle de apps = AppLocker/WDAC. AV = detecção de arquivos."},
+
+{id:"S20",domain:"Soluções de Segurança",sub:"Defender for Identity - sensores",diff:"media",type:"single",
+text:"Como o Microsoft Defender for Identity coleta sinais do ambiente Active Directory local?",
+opts:["Através de sensores instalados nos controladores de domínio","Através de integração com Azure Firewall","Através de sincronização com Microsoft Entra Connect","Através de logs do Microsoft 365"],
+correct:[0],
+exp:"Defender for Identity usa sensores leves instalados diretamente nos Domain Controllers para monitorar tráfego Kerberos/LDAP e eventos Windows. Detecta Pass-the-Hash, Pass-the-Ticket, reconnaissance, lateral movement e comprometimento de credenciais."},
+
+{id:"S21",domain:"Soluções de Conformidade",sub:"Retenção: políticas vs rótulos",diff:"media",type:"single",
+text:"Qual é a principal diferença entre políticas de retenção e rótulos de retenção no Microsoft Purview?",
+opts:["Políticas de retenção são aplicadas em localizações (nível site/caixa de correio); rótulos de retenção são aplicados a itens individuais","Rótulos de retenção são mais antigos; políticas são mais novas","Políticas de retenção são gratuitas; rótulos são pagos","Não há diferença; são termos sinônimos"],
+correct:[0],
+exp:"Políticas de retenção = nível de localização (toda caixa de correio, todo site SharePoint). Rótulos de retenção = nível de item individual (email específico, documento específico). Rótulos podem ser aplicados manualmente ou automaticamente e permitem declarar registros."},
+
+{id:"S22",domain:"Soluções de Conformidade",sub:"Records Management",diff:"hard",type:"single",
+text:"O que acontece quando um documento é declarado como 'registro' (record) no Microsoft Purview?",
+opts:["O documento é automaticamente deletado","O documento não pode ser editado ou excluído até o fim do período de retenção","O documento é criptografado","O documento é compartilhado publicamente"],
+correct:[1],
+exp:"Quando um item é marcado como registro (record), restrições são aplicadas: não pode ser editado, metadados não modificados, não pode ser excluído até fim da retenção. Atende requisitos regulatórios de preservação imutável de informações."},
+
+{id:"S23",domain:"Soluções de Conformidade",sub:"Insider Risk Management",diff:"hard",type:"single",
+text:"Qual é o objetivo do Insider Risk Management no Microsoft Purview?",
+opts:["Detectar ameaças externas como hackers","Detectar e investigar atividades de risco realizadas por usuários internos (exfiltração de dados, vazamentos)","Gerenciar riscos financeiros da organização","Fazer backup de dados críticos"],
+correct:[1],
+exp:"Insider Risk Management detecta, investiga e age em atividades de risco interno: roubo de dados por funcionários saindo, vazamentos de dados confidenciais, violações de políticas de segurança. Usa machine learning e correlação de sinais."},
+
+{id:"S24",domain:"Soluções de Conformidade",sub:"eDiscovery",diff:"media",type:"single",
+text:"No contexto de investigações legais, o que o eDiscovery (Standard e Premium) no Microsoft Purview permite fazer?",
+opts:["Criptografar todos os dados da organização","Pesquisar, preservar e exportar conteúdo para responder a solicitações legais e investigações","Fazer backup de emails","Bloquear ataques de phishing"],
+correct:[1],
+exp:"eDiscovery = identificar, preservar e coletar conteúdo eletrônico para descoberta legal. Standard = pesquisa e exportação básicas. Premium = gerenciamento de custodiantes, holds legais, análise avançada e revisão."},
+
+{id:"S25",domain:"Soluções de Conformidade",sub:"Audit Standard vs Premium",diff:"media",type:"single",
+text:"Qual é a diferença principal entre Audit (Standard) e Audit (Premium) no Microsoft Purview?",
+opts:["Audit Standard retém logs por 90 dias; Audit Premium retém por 1 ano (ou 10 anos com add-on)","Audit Premium é gratuito; Audit Standard é pago","Audit Standard = Azure; Audit Premium = Microsoft 365","Não há diferença; são sinônimos"],
+correct:[0],
+exp:"Audit Standard (incluído em muitas licenças M365) = 90 dias de retenção. Audit Premium (E5 ou add-on) = 1 ano por padrão (10 anos com add-on), acesso a eventos cruciais adicionais, maior largura de banda de API e políticas de retenção personalizadas."}
+];
+
+// ============================================================
+// LÓGICA DO SIMULADO
+// ============================================================
+let proofData = [];
+let currentProof = 0;
+let currentIdx = 0;
+let userAnswers = {};   // idx -> [selected indices] or undefined
+let submittedFlags = {};// idx -> true/false
+
+const domainOf = q => q.domain;
+
+function startProof(n) {
+  currentProof = n;
+  proofData = n === 1 ? prova1 : prova2;
+  currentIdx = 0;
+  userAnswers = {};
+  submittedFlags = {};
+
+  document.getElementById('startScreen').style.display = 'none';
+  document.getElementById('quizScreen').style.display = 'block';
+  document.getElementById('resultsScreen').classList.remove('show');
+  document.getElementById('quizTitle').textContent = n === 1 ? 'SC-900 — Prova Completa' : 'SC-900 — Mini Simulado Final';
+  document.getElementById('qTotal').textContent = proofData.length;
+  document.getElementById('sBlank').textContent = proofData.length;
+  renderQ();
+}
+
+function retryProof() { startProof(currentProof); }
+
+function backToStart() {
+  document.getElementById('startScreen').style.display = 'flex';
+  document.getElementById('quizScreen').style.display = 'none';
+  document.getElementById('resultsScreen').classList.remove('show');
+}
+
+function renderQ() {
+  const q = proofData[currentIdx];
+  const submitted = !!submittedFlags[currentIdx];
+  const selected = userAnswers[currentIdx] || [];
+
+  let html = '';
+  // Header
+  html += '<div class="q-header"><div class="q-left">';
+  html += '<div class="q-num">Q' + (currentIdx + 1) + '/' + proofData.length + '</div>';
+  html += '<div class="q-domain">' + q.domain + '</div>';
+  const diffLabel = q.diff === 'easy' ? 'Fácil' : q.diff === 'media' ? 'Média' : 'Difícil';
+  html += '<div class="q-diff ' + q.diff + '">' + diffLabel + '</div>';
+  if (q.type === 'multi') {
+    html += '<div class="q-type-badge">Múltipla seleção</div>';
+  }
+  html += '</div></div>';
+
+  // Scenario
+  if (q.scenario) {
+    html += '<div class="q-scenario">📌 ' + q.scenario + '</div>';
+  }
+
+  // Text
+  html += '<div class="q-text">' + q.text + '</div>';
+
+  // Multi hint
+  if (q.type === 'multi' && !submitted) {
+    html += '<div class="multi-hint">⚠️ Selecione exatamente <strong>' + q.correct.length + '</strong> alternativas corretas</div>';
+  }
+
+  // Options
+  html += '<div class="options">';
+  q.opts.forEach((opt, i) => {
+    const isSelected = selected.includes(i);
+    const isCorrect = q.correct.includes(i);
+    let cls = 'option';
+    if (submitted) { cls += ' disabled'; if (isCorrect) cls += ' submitted correct'; else if (isSelected && !isCorrect) cls += ' submitted incorrect'; }
+    else if (isSelected) cls += ' selected';
+
+    const inputType = q.type === 'multi' ? 'checkbox' : 'radio';
+    html += '<label class="' + cls + '">';
+    html += '<input type="' + inputType + '" name="opt" value="' + i + '" ' +
+            (isSelected ? 'checked' : '') + (submitted ? ' disabled' : '') +
+            ' onchange="selectOpt(' + i + ')">';
+    html += '<strong>' + String.fromCharCode(65 + i) + '.</strong>&nbsp;' + opt;
+    html += '</label>';
+  });
+  html += '</div>';
+
+  // Feedback
+  if (submitted) {
+    const correct = isCorrect(currentIdx);
+    html += '<div class="feedback show ' + (correct ? 'correct' : 'incorrect') + '">';
+    html += '<div class="feedback-title">' + (correct ? '✓ Resposta Correta!' : '✗ Resposta Incorreta') + '</div>';
+    if (!correct) {
+      const corrLetters = q.correct.map(i => String.fromCharCode(65 + i)).join(' e ');
+      html += '<div style="margin-bottom:8px">Resposta correta: <strong>' + corrLetters + '</strong></div>';
+    }
+    html += q.exp;
+    html += '</div>';
+  }
+
+  document.getElementById('questionContainer').innerHTML = html;
+
+  // Navigation
+  const nav = document.getElementById('navigation');
+  const totalAnswered = Object.keys(submittedFlags).length;
+  const isLast = currentIdx === proofData.length - 1;
+  const allDone = totalAnswered === proofData.length;
+
+  let navHtml = '<button class="btn-prev" onclick="prevQ()" ' + (currentIdx === 0 ? 'disabled' : '') + '>← Anterior</button>';
+  if (!submitted) {
+    navHtml += '<button class="btn-confirm" onclick="confirmAnswer()">Confirmar Resposta ✓</button>';
+  } else if (isLast && allDone) {
+    navHtml += '<button class="btn-finish" onclick="finishProof()">Ver Resultado Final →</button>';
+  } else {
+    navHtml += '<button class="btn-next" onclick="nextQ()" ' + (isLast ? 'disabled' : '') + '>Próxima →</button>';
+  }
+  nav.innerHTML = navHtml;
+
+  updateStats();
+}
+
+function selectOpt(i) {
+  if (submittedFlags[currentIdx]) return;
+  const q = proofData[currentIdx];
+  let sel = userAnswers[currentIdx] ? [...userAnswers[currentIdx]] : [];
+
+  if (q.type === 'single') {
+    sel = [i];
+  } else {
+    if (sel.includes(i)) { sel = sel.filter(x => x !== i); }
+    else { sel.push(i); }
+  }
+  userAnswers[currentIdx] = sel;
+
+  // Update visual
+  document.querySelectorAll('.option').forEach((el, idx) => {
+    el.classList.toggle('selected', sel.includes(idx));
+  });
+}
+
+function confirmAnswer() {
+  const q = proofData[currentIdx];
+  const sel = userAnswers[currentIdx] || [];
+  if (sel.length === 0) { alert('Selecione pelo menos uma alternativa.'); return; }
+  if (q.type === 'multi' && sel.length !== q.correct.length) {
+    alert('Selecione exatamente ' + q.correct.length + ' alternativas.');
+    return;
+  }
+  submittedFlags[currentIdx] = true;
+  renderQ();
+}
+
+function isCorrect(idx) {
+  const q = proofData[idx];
+  const sel = (userAnswers[idx] || []).slice().sort().join(',');
+  const cor = q.correct.slice().sort().join(',');
+  return sel === cor;
+}
+
+function prevQ() { if (currentIdx > 0) { currentIdx--; renderQ(); scroll(); } }
+function nextQ() { if (currentIdx < proofData.length - 1) { currentIdx++; renderQ(); scroll(); } }
+function scroll() { document.getElementById('quizScreen').scrollIntoView({behavior:'smooth'}); }
+
+function updateStats() {
+  const n = proofData.length;
+  let corr = 0, incorr = 0;
+  for (let i = 0; i < n; i++) {
+    if (!submittedFlags[i]) continue;
+    if (isCorrect(i)) corr++; else incorr++;
+  }
+  const blank = n - corr - incorr;
+  const rate = (corr + incorr) > 0 ? Math.round(corr / (corr + incorr) * 100) : 0;
+
+  document.getElementById('qCurr').textContent = currentIdx + 1;
+  document.getElementById('sCorr').textContent = corr;
+  document.getElementById('sIncorr').textContent = incorr;
+  document.getElementById('sBlank').textContent = blank;
+  document.getElementById('sRate').textContent = rate + '%';
+  document.getElementById('progressFill').style.width = ((corr + incorr) / n * 100) + '%';
+}
+
+function finishProof() {
+  const n = proofData.length;
+  let corr = 0, incorr = 0;
+  for (let i = 0; i < n; i++) {
+    if (!submittedFlags[i]) continue;
+    if (isCorrect(i)) corr++; else incorr++;
+  }
+  const blank = n - corr - incorr;
+  const pct = Math.round(corr / n * 100);
+  const approved = pct >= 70;
+
+  document.getElementById('quizScreen').style.display = 'none';
+  const rs = document.getElementById('resultsScreen');
+  rs.classList.add('show');
+  document.getElementById('finalScore').textContent = pct + '%';
+  document.getElementById('finalStatus').textContent = approved ? '✅ APROVADO — Parabéns!' : '❌ NÃO APROVADO — Continue estudando';
+  document.getElementById('rCorr').textContent = corr;
+  document.getElementById('rIncorr').textContent = incorr;
+  document.getElementById('rBlank').textContent = blank;
+
+  // Domain breakdown
+  const domains = {};
+  proofData.forEach((q, i) => {
+    if (!domains[q.domain]) domains[q.domain] = {c:0,t:0};
+    domains[q.domain].t++;
+    if (submittedFlags[i] && isCorrect(i)) domains[q.domain].c++;
+  });
+
+  let dHtml = '';
+  for (const d in domains) {
+    const {c, t} = domains[d];
+    const p = Math.round(c / t * 100);
+    dHtml += '<div class="domain-item">';
+    dHtml += '<div class="domain-row"><div class="domain-name">' + d + '</div><div class="domain-score">' + c + '/' + t + ' (' + p + '%)</div></div>';
+    dHtml += '<div class="domain-bar"><div class="domain-progress" style="width:' + p + '%">' + (p > 12 ? p + '%' : '') + '</div></div>';
+    dHtml += '</div>';
+  }
+  document.getElementById('domainStats').innerHTML = dHtml;
+
+  // Question review
+  let rHtml = '';
+  proofData.forEach((q, i) => {
+    const done = !!submittedFlags[i];
+    const ok = done && isCorrect(i);
+    const cls = ok ? 'c' : 'i';
+    const icon = ok ? '✓' : done ? '✗' : '—';
+    rHtml += '<div class="q-review ' + cls + '">';
+    rHtml += '<div class="q-review-num">' + icon + ' Q' + (i + 1) + ' — ' + q.sub + '</div>';
+    const textSnip = q.text.length > 70 ? q.text.substring(0, 70) + '...' : q.text;
+    rHtml += '<div class="q-review-text">' + textSnip + '</div>';
+    if (done && !ok) {
+      const ua = (userAnswers[i] || []).map(x => String.fromCharCode(65 + x)).join(', ');
+      const ca = q.correct.map(x => String.fromCharCode(65 + x)).join(', ');
+      rHtml += '<div class="q-review-ans"><span class="ia">Sua resposta: ' + ua + '</span> &nbsp;|&nbsp; <span class="ca">Correta: ' + ca + '</span></div>';
+    }
+    rHtml += '</div>';
+  });
+  document.getElementById('qReview').innerHTML = rHtml;
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
